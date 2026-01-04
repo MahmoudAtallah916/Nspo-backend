@@ -4,6 +4,8 @@ import ExcelJS from 'exceljs';
 import fs from 'fs';
 import path from 'path';
 import mongoose from 'mongoose'
+
+
 const tryParse = (val) => {
   if (typeof val !== "string") return val;
   val = val.trim();
@@ -293,31 +295,42 @@ export const exportByJobToExcel = async (req, res) => {
   try {
     const { jobId } = req.params;
 
+    // 1️⃣ التحقق من الوظيفة
     const job = await Job.findById(jobId);
-    if (!job) return res.status(404).json({ error: "Job not found" });
+    if (!job) {
+      return res.status(404).json({ error: "Job not found" });
+    }
 
+    // 2️⃣ جلب المتقدمين
     const applicants = await Applicant.find({
       "appliedJobs.job": jobId,
     }).lean();
 
-    if (!applicants.length)
+    if (!applicants.length) {
       return res.status(404).json({ error: "No applicants found" });
+    }
 
+    // 3️⃣ إنشاء ملف Excel
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("المتقدمين");
+    workbook.creator = "NSPO System";
+    workbook.created = new Date();
 
-    // العنوان الرئيسي
+    const worksheet = workbook.addWorksheet("المتقدمين", {
+      views: [{ rightToLeft: true }],
+    });
+
+    // 4️⃣ العنوان الرئيسي
     worksheet.mergeCells("A1:W1");
-    const mainTitle = worksheet.getCell("A1");
-    mainTitle.value = `المتقدمين على وظيفة: ${job.title} (${
+    const titleCell = worksheet.getCell("A1");
+    titleCell.value = `المتقدمين على وظيفة: ${job.title} (${
       job.company || "غير محدد"
     })`;
-    mainTitle.font = { size: 16, bold: true };
-    mainTitle.alignment = { vertical: "middle", horizontal: "center" };
+    titleCell.font = { size: 16, bold: true };
+    titleCell.alignment = { horizontal: "center", vertical: "middle" };
 
     worksheet.addRow([]);
 
-    // رؤوس الأعمدة
+    // 5️⃣ رؤوس الأعمدة
     const headers = [
       "الاسم الكامل",
       "الرقم القومي",
@@ -347,6 +360,7 @@ export const exportByJobToExcel = async (req, res) => {
     const headerRow = worksheet.addRow(headers);
     headerRow.font = { bold: true, size: 13 };
     headerRow.alignment = { horizontal: "center", vertical: "middle" };
+
     headerRow.eachCell((cell) => {
       cell.border = {
         top: { style: "thin" },
@@ -354,14 +368,21 @@ export const exportByJobToExcel = async (req, res) => {
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFEFEFEF" },
+      };
     });
 
-    // تعبئة البيانات
+    // 6️⃣ تعبئة البيانات
     applicants.forEach((a) => {
       worksheet.addRow([
-        a.fullName,
-        a.nationalId,
-        a.birthDate ? new Date(a.birthDate).toLocaleDateString("ar-EG") : "",
+        a.fullName || "",
+        a.nationalId || "",
+        a.birthDate
+          ? new Date(a.birthDate).toLocaleDateString("ar-EG")
+          : "",
         a.maritalStatus || "",
         a.gender || "",
         a.religion || "",
@@ -375,7 +396,9 @@ export const exportByJobToExcel = async (req, res) => {
         a.education?.degree || "",
         a.education?.university || "",
         a.experience
-          ?.map((exp) => `${exp.company} - ${exp.role} (${exp.years} سنوات)`)
+          ?.map(
+            (exp) => `${exp.company} - ${exp.role} (${exp.years} سنوات)`
+          )
           .join(" / ") || "",
         a.totalExperienceYears || 0,
         a.skills?.join(", ") || "",
@@ -393,7 +416,7 @@ export const exportByJobToExcel = async (req, res) => {
       ]);
     });
 
-    // تنسيق الأعمدة
+    // 7️⃣ تنسيق الأعمدة
     worksheet.columns.forEach((col) => {
       col.width = 25;
       col.alignment = {
@@ -403,19 +426,26 @@ export const exportByJobToExcel = async (req, res) => {
       };
     });
 
-    // إنشاء الملف
-    const fileName = `Applicants_${job.title.replace(/\s+/g, "_")}.xlsx`;
-    const filePath = path.join("uploads", fileName);
+    // 8️⃣ إعداد اسم الملف (يدعم العربي)
+    const fileName = `Applicants_${job.title}.xlsx`;
+    const encodedFileName = encodeURIComponent(fileName);
 
-    await workbook.xlsx.writeFile(filePath);
+    // 9️⃣ إرسال الملف مباشرة (Streaming)
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
 
-    // إرسال الملف
-    res.download(filePath, fileName, (err) => {
-      if (err) console.error("Error sending file:", err);
-      fs.unlink(filePath, () => {});
-    });
-  } catch (err) {
-    console.error("Error exporting applicants to Excel:", err);
-    res.status(500).json({ error: err.message });
+    // حل مشكلة الحروف العربية 👇
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="Applicants.xlsx"; filename*=UTF-8''${encodedFileName}`
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Export Excel Error:", error);
+    res.status(500).json({ error: "Failed to export Excel file" });
   }
 };
