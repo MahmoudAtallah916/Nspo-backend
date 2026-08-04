@@ -1,12 +1,16 @@
 // controllers/companyController.js
 import Company from '../models/Company.js';
 import { filterFieldsByLanguage } from '../middleware/languageMiddleware.js';
+import { connectDB } from '../config/database.js';
+
 
 // @desc    Get all companies
 // @route   GET /api/companies?lang=en
 // @access  Public
 export const getCompanies = async (req, res) => {
   try {
+    await connectDB();
+
     const companies = await Company.find({});
 
     const filteredCompanies = companies.map(company => {
@@ -33,6 +37,8 @@ export const getCompanies = async (req, res) => {
 // @access  Public
 export const getCompanyById = async (req, res) => {
   try {
+    await connectDB();
+
     const company = await Company.findById(req.params.id);    
     if (!company) {
       return res.status(404).json({ message: 'Company not found' });
@@ -78,6 +84,8 @@ export const getCompanyById = async (req, res) => {
 // @access  Public
 export const downloadProductsPDF = async (req, res) => {
   try {
+    await connectDB();
+
     const company = await Company.findOne({ id: req.params.id });
     
     if (!company) {
@@ -102,6 +110,8 @@ export const downloadProductsPDF = async (req, res) => {
 // @access  Public
 export const downloadOpportunitiesPDF = async (req, res) => {
   try {
+    await connectDB();
+
     const company = await Company.findOne({ id: req.params.id });
     
     if (!company) {
@@ -125,6 +135,8 @@ export const downloadOpportunitiesPDF = async (req, res) => {
 // @access  Public
 export const getCompaniesBySector = async (req, res) => {
   try {
+    await connectDB();
+
     const { sectorName } = req.params;
     const lang = req.language;
     
@@ -152,6 +164,8 @@ export const getCompaniesBySector = async (req, res) => {
 // @access  Public
 export const searchCompanies = async (req, res) => {
   try {
+    await connectDB();
+
     const { query } = req.params;
     const lang = req.language;
     
@@ -179,6 +193,8 @@ export const searchCompanies = async (req, res) => {
 // @access  Public
 export const getCompanyInvestments = async (req, res) => {
   try {
+    await connectDB();
+
     const company = await Company.findOne({ id: req.params.id });
     
     if (!company) {
@@ -224,6 +240,8 @@ export const getCompanyInvestments = async (req, res) => {
 // @access  Public
 export const getCompanyLocations = async (req, res) => {
   try {
+    await connectDB();
+
     const company = await Company.findOne({ id: req.params.id });
     
     if (!company) {
@@ -260,6 +278,8 @@ export const getCompanyLocations = async (req, res) => {
 // @access  Public
 export const getCompanyGallery = async (req, res) => {
   try {
+    await connectDB();
+
     const company = await Company.findOne({ id: req.params.id });
     
     if (!company) {
@@ -288,6 +308,8 @@ export const getCompanyGallery = async (req, res) => {
 // @access  Public
 export const getCompanyUnits = async (req, res) => {
   try {
+    await connectDB();
+
     const company = await Company.findOne({ id: req.params.id });
     
     if (!company) {
@@ -317,6 +339,8 @@ export const getCompanyUnits = async (req, res) => {
 // @access  Public
 export const getAllSectors = async (req, res) => {
   try {
+    await connectDB();
+
     const companies = await Company.find({});
     
     // Group sectors
@@ -379,6 +403,8 @@ export const getAllSectors = async (req, res) => {
 // @access  Public
 export const getSectorsByLanguage = async (req, res) => {
   try {
+    await connectDB();
+
     const lang = req.language; // ar, en, fr
     const companies = await Company.find({});
     
@@ -424,6 +450,8 @@ export const getSectorsByLanguage = async (req, res) => {
 // @access  Public
 export const getSectorsSummary = async (req, res) => {
   try {
+    await connectDB();
+
     const companies = await Company.find({});
     
     // Extract unique sectors
@@ -459,6 +487,8 @@ export const getSectorsSummary = async (req, res) => {
 // @access  Public
 export const getSectorsWithCounts = async (req, res) => {
   try {
+    await connectDB();
+
     const lang = req.language;
     const companies = await Company.find({});
     
@@ -504,6 +534,8 @@ export const getSectorsWithCounts = async (req, res) => {
 // @access  Public
 export const getSectorById = async (req, res) => {
   try {
+    await connectDB();
+
     const { sectorId } = req.params;
     const companies = await Company.find({ sector_en: sectorId });
     
@@ -558,6 +590,8 @@ export const getSectorById = async (req, res) => {
 // @access  Public
 export const getSectorStats = async (req, res) => {
   try {
+    await connectDB();
+
     const companies = await Company.find({});
     
     const sectorStats = new Map();
@@ -596,6 +630,8 @@ export const getSectorStats = async (req, res) => {
 // @access  Public
 export const searchSectors = async (req, res) => {
   try {
+    await connectDB();
+
     const { query } = req.params;
     const lang = req.language;
     
@@ -645,6 +681,8 @@ export const searchSectors = async (req, res) => {
 // @access  Private/Admin
 export const createCompany = async (req, res) => {
   try {
+    await connectDB();
+
     // Check if company with this id already exists
     const existingCompany = await Company.findOne({ id: req.body.id });
     
@@ -674,6 +712,8 @@ export const createCompany = async (req, res) => {
 // @access  Private/Admin
 export const updateCompany = async (req, res) => {
   try {
+    await connectDB();
+
     const company = await Company.findOne({ id: req.params.id });
     
     if (!company) {
@@ -703,6 +743,8 @@ export const updateCompany = async (req, res) => {
 // @access  Private/Admin
 export const deleteCompany = async (req, res) => {
   try {
+    await connectDB();
+
     const company = await Company.findOne({ id: req.params.id });
     
     if (!company) {
@@ -723,6 +765,8 @@ export const deleteCompany = async (req, res) => {
 // @access  Public
 export const getFeaturedInvestments = async (req, res) => {
   try {
+    await connectDB();
+
     const companies = await Company.find({
       'investment_opportunities.is_featured': true
     });
@@ -763,6 +807,8 @@ export const getFeaturedInvestments = async (req, res) => {
 // @access  Public
 export const getCompanyStats = async (req, res) => {
   try {
+    await connectDB();
+
     const totalCompanies = await Company.countDocuments();
     
     const totalInvestmentOpportunities = await Company.aggregate([

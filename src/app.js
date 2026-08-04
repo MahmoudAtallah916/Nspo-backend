@@ -15,6 +15,8 @@ import { responseFilter } from './middleware/responseFilter.js';
 import { detectLanguage } from './middleware/languageMiddleware.js';
 import { trackAnalytics } from './middleware/analyticsMiddleware.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import newsRoutes from './routes/newsRoutes.js';
+import uiControlRoutes from './routes/uiControlRoutes.js';
 dotenv.config();
 
 
@@ -46,6 +48,8 @@ app.use('/api/investments', investmentRoutes);
 app.use('/api/sectors', sectorRoutes);
 app.use('/api/upload', uploadRoutes); 
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/ui-controls', uiControlRoutes);
 
 
 
@@ -59,7 +63,20 @@ app.get('/', (req, res) => res.send('nspo Back-End is running'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
+  // Multer file-type / size errors → 400
+  if (err.name === 'MulterError' || err.message?.startsWith('Only JPG')) {
+    return res.status(400).json({ success: false, message: err.message });
+  }
+  // Mongoose validation errors → 422
+  if (err.name === 'ValidationError') {
+    const messages = Object.values(err.errors).map((e) => e.message);
+    return res.status(422).json({ success: false, message: messages.join(', ') });
+  }
+  // Mongoose duplicate key (e.g. slug) → 409
+  if (err.code === 11000) {
+    return res.status(409).json({ success: false, message: 'Duplicate value – record already exists' });
+  }
   console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-}); 
+  res.status(500).json({ success: false, error: 'Something went wrong!' });
+});
 export default app;

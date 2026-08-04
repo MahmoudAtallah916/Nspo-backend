@@ -1,6 +1,8 @@
 import Investment from '../models/Investment.js';
 import Company from '../models/Company.js';
 import { filterFieldsByLanguage } from '../middleware/languageMiddleware.js';
+import { connectDB } from '../config/database.js';
+
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
@@ -24,6 +26,8 @@ const getDefaultStatus = (lang) => {
 // ============================================
 export const getInvestments = async (req, res) => {
   try {
+    await connectDB();
+
     const { min_amount, max_amount, governorate, featured, limit = 20, page = 1 } = req.query;
     const lang = req.language || 'ar';
 
@@ -100,6 +104,8 @@ export const getInvestments = async (req, res) => {
 // ============================================
 export const getFeaturedInvestments = async (req, res) => {
   try {
+    await connectDB();
+
     const lang = req.language || 'ar';
 
     const investments = await Investment.find({
@@ -139,6 +145,8 @@ export const getFeaturedInvestments = async (req, res) => {
 // ============================================
 export const getInvestmentById = async (req, res) => {
   try {
+    await connectDB();
+
     const lang = req.language || 'ar';
 
     const investment = await Investment.findById(req.params.id)
@@ -186,6 +194,8 @@ export const getInvestmentById = async (req, res) => {
 // ============================================
 export const createInvestment = async (req, res) => {
   try {
+    await connectDB();
+
     const company = await Company.findById(req.body.company_id);
     if (!company) {
       return res.status(404).json({ message: 'Company not found' });
@@ -250,6 +260,8 @@ export const createInvestment = async (req, res) => {
 // ============================================
 export const updateInvestment = async (req, res) => {
   try {
+    await connectDB();
+
     const investment = await Investment.findById(req.params.id);
 
     if (!investment) {
@@ -302,6 +314,8 @@ export const updateInvestment = async (req, res) => {
 // ============================================
 export const deleteInvestment = async (req, res) => {
   try {
+    await connectDB();
+
     const investment = await Investment.findById(req.params.id);
 
     if (!investment) {

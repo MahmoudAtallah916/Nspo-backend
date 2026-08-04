@@ -3,6 +3,8 @@ import Company from '../models/Company.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { connectDB } from '../config/database.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +14,8 @@ const __dirname = path.dirname(__filename);
 // @access  Private/Admin
 export const uploadProductsPDF = async (req, res) => {
   try {
+    await connectDB();
+
     const { companyId } = req.params;
     
     if (!req.file) {
@@ -86,6 +90,8 @@ export const uploadProductsPDF = async (req, res) => {
 // @access  Private/Admin
 export const uploadOpportunitiesPDF = async (req, res) => {
   try {
+    await connectDB();
+
     const { companyId } = req.params;
     
     if (!req.file) {
@@ -154,6 +160,8 @@ export const uploadOpportunitiesPDF = async (req, res) => {
 // @access  Private/Admin
 export const uploadCompanyPDF = async (req, res) => {
   try {
+    await connectDB();
+
     const { companyId } = req.params;
     const { pdfType } = req.body;
     
@@ -236,6 +244,8 @@ export const uploadCompanyPDF = async (req, res) => {
 // @access  Public
 export const getProductsPDF = async (req, res) => {
   try {
+    await connectDB();
+
     const { companyId } = req.params;
     
     const company = await Company.findOne({ id: parseInt(companyId) });
@@ -274,6 +284,8 @@ export const getProductsPDF = async (req, res) => {
 // @access  Public
 export const getOpportunitiesPDF = async (req, res) => {
   try {
+    await connectDB();
+
     const { companyId } = req.params;
     
     const company = await Company.findOne({ id: parseInt(companyId) });
@@ -312,6 +324,8 @@ export const getOpportunitiesPDF = async (req, res) => {
 // @access  Private/Admin
 export const deleteProductsPDF = async (req, res) => {
   try {
+    await connectDB();
+
     const { companyId } = req.params;
     
     const company = await Company.findOne({ id: parseInt(companyId) });
@@ -358,6 +372,8 @@ export const deleteProductsPDF = async (req, res) => {
 // @access  Private/Admin
 export const deleteOpportunitiesPDF = async (req, res) => {
   try {
+    await connectDB();
+
     const { companyId } = req.params;
     
     const company = await Company.findOne({ id: parseInt(companyId) });

@@ -1,4 +1,6 @@
 import Visit from '../models/Visit.js';
+import { connectDB } from '../config/database.js';
+
 
 const pad2 = (n) => String(n).padStart(2, '0');
 
@@ -75,6 +77,8 @@ const aggregateVisits = (docs) => {
 
 export const getAnalyticsSummary = async (req, res) => {
   try {
+    await connectDB();
+
     const dates = getDatesForRange(req.query.range);
     const docs = await Visit.find({ date: { $in: dates } }).lean();
     const { totalVisits, uniqueVisitors, mostUsedEndpoint } = aggregateVisits(docs);
@@ -95,6 +99,8 @@ export const getAnalyticsSummary = async (req, res) => {
 
 export const getAnalyticsEndpoints = async (req, res) => {
   try {
+    await connectDB();
+
     const dates = getDatesForRange(req.query.range);
     const docs = await Visit.find({ date: { $in: dates } }).lean();
     const { endpoints } = aggregateVisits(docs);

@@ -4,6 +4,8 @@ import ExcelJS from 'exceljs';
 import fs from 'fs';
 import path from 'path';
 import mongoose from 'mongoose'
+import { connectDB } from '../config/database.js';
+
 
 
 const tryParse = (val) => {
@@ -19,6 +21,8 @@ const tryParse = (val) => {
 
 export const uploadApplicant = async (req, res) => {
   try {
+    await connectDB();
+
     const body = { ...req.body };
 
     const contactInfo = tryParse(body.contactInfo) || {
@@ -111,6 +115,8 @@ export const uploadApplicant = async (req, res) => {
 
 export const getApplicants = async (req, res) => {
   try {
+    await connectDB();
+
     const applicants = await Applicant.find();
     res.json(applicants);
   } catch (err) {
@@ -120,6 +126,8 @@ export const getApplicants = async (req, res) => {
 
 export const getApplicantsByJob = async (req, res) => {
   try {
+    await connectDB();
+
     const { jobId } = req.params;
     const jobObjectId = mongoose.Types.ObjectId.isValid(jobId)
       ? new mongoose.Types.ObjectId(jobId)
@@ -191,6 +199,8 @@ export const getApplicantsByJob = async (req, res) => {
 
 export const updateApplicationStatus = async (req, res) => {
   try {
+    await connectDB();
+
     const { jobId, status } = req.body;
     const validStatuses = ["pending", "under-review", "accepted", "rejected"];
     if (!jobId || !status || !validStatuses.includes(status)) {
@@ -232,6 +242,8 @@ export const updateApplicationStatus = async (req, res) => {
 
 export const exportAllByJob = async (req, res) => {
   try {
+    await connectDB();
+
     const jobs = await Job.find().select("title").lean();
     const results = [];
 
@@ -293,6 +305,8 @@ export const exportAllByJob = async (req, res) => {
 
 export const exportByJobToExcel = async (req, res) => {
   try {
+    await connectDB();
+
     const { jobId } = req.params;
 
     // 1️⃣ التحقق من الوظيفة

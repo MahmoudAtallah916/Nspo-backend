@@ -5,6 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import ExcelJS from 'exceljs';
+import { connectDB } from '../config/database.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +21,8 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 
 export const submitInvestor = async (req, res) => {
   try {
+    await connectDB();
+
     const fields = req.body || {};
     const files = req.files || {};
 
@@ -262,6 +266,8 @@ export const submitInvestor = async (req, res) => {
 
 export const getInvestors = async (req, res) => {
   try {
+    await connectDB();
+
     // ✅ جلب جميع المستثمرين مع بيانات الاستثمار المرتبط (populate)
     const investors = await Investor.find({})
       .populate({
@@ -320,6 +326,8 @@ export const getInvestors = async (req, res) => {
 
 export const exportInvestorsExcel = async (req, res) => {
   try {
+    await connectDB();
+
     const investors = await Investor.find({})
       .populate({
         path: 'investmentId',

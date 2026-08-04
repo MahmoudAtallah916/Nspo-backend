@@ -1,9 +1,13 @@
 import Admin from '../models/Admin.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { connectDB } from '../config/database.js';
+
 
 export const signup = async (req, res) => {
   try {
+    await connectDB();
+
     const { username, password } = req.body;
     if (!username || !password)
       return res.status(400).json({ error: "Username & password required" });
@@ -24,6 +28,8 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
+    await connectDB();
+
     const { username, password } = req.body;
     if (!username || !password)
       return res.status(400).json({ error: "Username & password required" });
